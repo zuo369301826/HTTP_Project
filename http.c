@@ -349,6 +349,7 @@ end:
 // 套接字初始化
 int SocketInit(char* ip, int port)
 {
+  //建立TCP客户端
   int sock = socket(AF_INET,SOCK_STREAM, 0);
   if( sock < 0 )
   {
@@ -356,9 +357,12 @@ int SocketInit(char* ip, int port)
     exit(1);
   }
 
+  //设置端口可重用，解决time_wait时端口被占用的情况
+  //要在绑定前设置
   int opt = 1;
   setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt);
 
+  //进行端口号绑定
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
@@ -369,12 +373,14 @@ int SocketInit(char* ip, int port)
     exit(1);
   }
 
+  //监听文件描述符
   if(listen(sock, 5) < 0)
   {
     perror("listen");
     exit(1);
   }
 
+  // 建立 epoll 文件描述符
   epoll_fd = epoll_create(10);
 
   return sock;
@@ -393,7 +399,7 @@ int main(int argc, char* argv[])
   }
   
   //初始化网络套接字
-  int lis_sock = SocketInit(argv[1], atoi(argv[2])); 
+  int lis_sock = SocketInit(argv[1],atoi(argv[2]) );
  
   printf("sock create success...\n\n");
   //添加文件描述符到epoll
