@@ -25,7 +25,7 @@ void Print(char *buf)
   printf("<h1>");
   printf("[%s]",str);
   printf("</h1>\n");
-  printf(" <a href=\"http://192.168.183.130:9090/index.html\"><h3>返回</h3></a>");
+  printf(" <a href=\"http://192.168.183.131:9090/index.html\"><h3>返回</h3></a>");
   printf("</body>\n");
   
   printf("</html>\n");

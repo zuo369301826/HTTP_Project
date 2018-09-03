@@ -205,6 +205,37 @@ void echo_www(int sock, char* path, int size, int* errCode)
   close(fd);
 }
 
+void echo_404(int sock)
+{
+
+  clear_header(sock);
+  char line[MAX];
+
+  const char* path = "wwwroot/404.html";
+
+  int fd = open( path , O_RDONLY);
+  if( fd < 0)
+  {
+    return ;
+  }
+  struct stat st;
+  stat(path, &st);
+  int size = st.st_size;
+
+  sprintf(line, "HTTP/1.1 200 OK\r\n");
+  send(sock, line, strlen(line), 0);
+
+  sprintf(line, "Content-Length: %d\r\n", size);
+  send(sock, line, strlen(line), 0);
+  
+  sprintf(line, "\r\n");
+  send(sock, line, strlen(line), 0);
+
+  sendfile(sock, fd, NULL, size);
+  
+  close(fd);
+}
+
 
 //##################################################
 //############     请求处理函数     ################
@@ -309,6 +340,7 @@ void ProcessConnect(int sock)
   if(stat(path, &st) < 0)
   {
     errCode = 403;
+    fprintf(stderr, "stat path : [%s] failed!\n",path);
     goto end;
   }
   if(S_ISDIR(st.st_mode))
@@ -335,8 +367,7 @@ void ProcessConnect(int sock)
 end:
   if( errCode != 200 )
   {
-    
-    printf("%d\n",errCode);//TODO
+    echo_404(sock);
   }
   close(sock);
   epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sock, NULL);
